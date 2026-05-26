@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Breaking News Overlay Customizer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #191d25;
+      --panel-2: #202633;
+      --text: #f5f7fb;
+      --muted: #aeb7c8;
+      --border: #323a49;
+      --accent: #e21b2d;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    header {
+      padding: 28px 32px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, #171b23, #111318);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.1;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 920px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 410px 1fr;
+      min-height: calc(100vh - 111px);
+    }
+
+    .controls {
+      padding: 24px;
+      border-right: 1px solid var(--border);
+      background: var(--panel);
+      overflow: auto;
+      max-height: calc(100vh - 111px);
+    }
+
+    .preview-pane {
+      padding: 24px;
+      overflow: auto;
+    }
+
+    fieldset {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 0 0 18px;
+      background: var(--panel-2);
+    }
+
+    legend {
+      padding: 0 8px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 13px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 11px;
+      background: #0f1218;
+      color: var(--text);
+      font: inherit;
+    }
+
+    input[type="color"] {
+      min-height: 42px;
+      padding: 4px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #343b49;
+    }
+
+    .iframe-wrap {
+      width: min(100%, 1280px);
+      aspect-ratio: 16 / 9;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background:
+        linear-gradient(45deg, rgba(255,255,255,.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.05) 75%),
+        linear-gradient(45deg, rgba(255,255,255,.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.05) 75%),
+        #222834;
+      background-position: 0 0, 20px 20px;
+      background-size: 40px 40px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    .url-box {
+      margin-top: 22px;
+      width: min(100%, 1280px);
+    }
+
+    textarea {
+      min-height: 112px;
+      resize: vertical;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 14px;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .controls { max-height: none; border-right: 0; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Breaking News Overlay Customizer</h1>
+    <p>Customize the overlay, preview the result, then copy the generated OBS Browser Source URL. Use a 1920 × 1080 browser source in OBS.</p>
+  </header>
+
+  <div class="layout">
+    <form id="controls" class="controls">
+      <fieldset>
+        <legend>Connection</legend>
+        <div class="two-col">
+          <label>Host
+            <input name="host" value="127.0.0.1" />
+          </label>
+          <label>Port
+            <input name="port" value="8080" />
+          </label>
+        </div>
+        <div class="two-col">
+          <label>Endpoint
+            <input name="endpoint" value="/" />
+          </label>
+          <label>Secure WebSocket
+            <select name="secure">
+              <option value="false">ws://</option>
+              <option value="true">wss://</option>
+            </select>
+          </label>
+        </div>
+        <label>Password, only if Streamer.bot auth is enabled
+          <input name="password" value="" type="password" autocomplete="off" />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Text</legend>
+        <label>Left Label
+          <input name="label" value="BREAKING NEWS" />
+        </label>
+        <label>Static Subtitle
+          <input name="subtitle" value="STREAM UPDATE" />
+        </label>
+        <label>Preview Headline
+          <input name="headline" value="This is a preview of the breaking news ticker message scrolling right to left." />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Layout</legend>
+        <div class="two-col">
+          <label>Bar Height
+            <input name="barHeight" value="96" type="number" min="48" max="180" />
+          </label>
+          <label>Bottom Offset
+            <input name="barBottom" value="36" type="number" min="0" max="240" />
+          </label>
+        </div>
+        <div class="two-col">
+          <label>Side Margin
+            <input name="barSideMargin" value="64" type="number" min="0" max="240" />
+          </label>
+          <label>Label Width
+            <input name="labelWidth" value="330" type="number" min="180" max="620" />
+          </label>
+        </div>
+        <label>Corner Radius
+          <input name="barRadius" value="0" type="number" min="0" max="48" />
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Colors</legend>
+        <div class="two-col">
+          <label>Label Background
+            <input name="labelBg" value="#b00020" type="color" />
+          </label>
+          <label>Label Text
+            <input name="labelText" value="#ffffff" type="color" />
+          </label>
+        </div>
+        <div class="two-col">
+          <label>Subtitle Background
+            <input name="subtitleBg" value="#101010" type="color" />
+          </label>
+          <label>Subtitle Text
+            <input name="subtitleText" value="#ffffff" type="color" />
+          </label>
+        </div>
+        <div class="two-col">
+          <label>Ticker Background
+            <input name="tickerBg" value="#f5f5f5" type="color" />
+          </label>
+          <label>Ticker Text
+            <input name="tickerText" value="#111111" type="color" />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Typography and Timing</legend>
+        <label>Font Family
+          <input name="fontFamily" value="Arial, Helvetica, sans-serif" />
+        </label>
+        <div class="two-col">
+          <label>Label Size
+            <input name="labelSize" value="42" type="number" min="16" max="90" />
+          </label>
+          <label>Subtitle Size
+            <input name="subtitleSize" value="26" type="number" min="12" max="72" />
+          </label>
+        </div>
+        <div class="two-col">
+          <label>Headline Size
+            <input name="headlineSize" value="34" type="number" min="14" max="88" />
+          </label>
+          <label>Scroll Speed px/sec
+            <input name="scrollSpeed" value="210" type="number" min="60" max="800" />
+          </label>
+        </div>
+        <label>Default Duration Seconds
+          <input name="defaultDurationSeconds" value="12" type="number" min="0" max="999" />
+        </label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="copyUrl">Copy OBS URL</button>
+        <button type="button" id="reset" class="secondary">Reset</button>
+      </div>
+    </form>
+
+    <section class="preview-pane">
+      <div class="iframe-wrap">
+        <iframe id="previewFrame" title="Overlay preview"></iframe>
+      </div>
+
+      <div class="url-box">
+        <label>Generated OBS Browser Source URL
+          <textarea id="generatedUrl" readonly></textarea>
+        </label>
+        <p class="note">OBS Browser Source settings: width 1920, height 1080. Keep custom CSS empty unless you intentionally want to override the overlay.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById('controls');
+    const frame = document.getElementById('previewFrame');
+    const output = document.getElementById('generatedUrl');
+    const copyButton = document.getElementById('copyUrl');
+    const resetButton = document.getElementById('reset');
+
+    const defaults = new FormData(form);
+
+    form.addEventListener('input', update);
+    form.addEventListener('change', update);
+    copyButton.addEventListener('click', copyUrl);
+    resetButton.addEventListener('click', resetForm);
+
+    update();
+
+    function overlayBaseUrl() {
+      return new URL('overlay/', window.location.href);
+    }
+
+    function collectParams({ preview }) {
+      const data = new FormData(form);
+      const params = new URLSearchParams();
+
+      for (const [key, value] of data.entries()) {
+        if (value !== '') params.set(key, value);
+      }
+
+      if (preview) {
+        params.set('preview', 'true');
+      } else {
+        params.delete('preview');
+        params.delete('headline');
+      }
+
+      return params;
+    }
+
+    function buildUrl({ preview }) {
+      const url = overlayBaseUrl();
+      url.search = collectParams({ preview }).toString();
+      return url.toString();
+    }
+
+    function update() {
+      frame.src = buildUrl({ preview: true });
+      output.value = buildUrl({ preview: false });
+    }
+
+    async function copyUrl() {
+      await navigator.clipboard.writeText(output.value);
+      const original = copyButton.textContent;
+      copyButton.textContent = 'Copied';
+      setTimeout(() => copyButton.textContent = original, 1200);
+    }
+
+    function resetForm() {
+      for (const [key, value] of defaults.entries()) {
+        const field = form.elements[key];
+        if (field) field.value = value;
+      }
+      update();
+    }
+  </script>
+</body>
+</html>

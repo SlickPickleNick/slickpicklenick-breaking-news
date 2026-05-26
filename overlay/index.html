@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Breaking News Overlay</title>
+  <link rel="stylesheet" href="./overlay.css" />
+</head>
+<body>
+  <main id="stage" aria-label="Breaking news overlay">
+    <section id="newsBar" class="news-bar is-hidden" aria-live="polite">
+      <div id="labelPanel" class="label-panel">
+        <span id="labelText">BREAKING NEWS</span>
+      </div>
+
+      <div id="contentPanel" class="content-panel">
+        <div id="subtitleRow" class="subtitle-row">STREAM UPDATE</div>
+        <div id="tickerWindow" class="ticker-window">
+          <div id="tickerTrack" class="ticker-track">
+            <span id="headlineText">This is a sample breaking news message.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside id="debugPanel" class="debug-panel" hidden>
+      <div><strong>Status:</strong> <span id="debugStatus">Loading</span></div>
+      <div><strong>Socket:</strong> <span id="debugSocket">Not connected</span></div>
+      <div><strong>Queue:</strong> <span id="debugQueue">0</span></div>
+    </aside>
+  </main>
+
+  <script src="./overlay.js"></script>
+</body>
+</html>
