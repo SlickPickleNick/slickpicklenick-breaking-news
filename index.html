@@ -7,102 +7,309 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #111318;
-      --panel: #191d25;
-      --panel-2: #202633;
-      --text: #f5f7fb;
-      --muted: #aeb7c8;
-      --border: #323a49;
-      --accent: #e21b2d;
+      --page-bg: #050712;
+      --panel-bg: rgba(10, 12, 20, 0.62);
+      --panel-open-bg: rgba(10, 12, 20, 0.78);
+      --card-bg: rgba(255, 255, 255, 0.055);
+      --card-hover: rgba(255, 255, 255, 0.075);
+      --field-bg: rgba(2, 4, 12, 0.58);
+      --field-bg-focus: rgba(11, 14, 27, 0.92);
+      --line: rgba(255, 255, 255, 0.13);
+      --line-soft: rgba(255, 255, 255, 0.08);
+      --text: rgba(255, 255, 255, 0.94);
+      --text-strong: #ffffff;
+      --muted: rgba(255, 255, 255, 0.68);
+      --muted-soft: rgba(255, 255, 255, 0.5);
+      --accent: rgba(120, 105, 255, 0.95);
+      --accent-2: rgba(76, 154, 255, 0.95);
+      --accent-soft: rgba(120, 105, 255, 0.18);
+      --accent-line: rgba(120, 105, 255, 0.52);
+      --danger: #b00020;
+      --radius-lg: 26px;
+      --radius-md: 18px;
+      --radius-pill: 999px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.44);
+      --focus: 0 0 0 3px rgba(120, 105, 255, 0.38);
     }
 
     * { box-sizing: border-box; }
 
+    html { min-height: 100%; }
+
     body {
+      min-height: 100%;
       margin: 0;
-      background: var(--bg);
       color: var(--text);
-      font-family: Inter, Arial, Helvetica, sans-serif;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.45;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(120, 105, 255, 0.26), transparent 34rem),
+        radial-gradient(circle at 88% 16%, rgba(76, 154, 255, 0.22), transparent 30rem),
+        radial-gradient(circle at 50% 100%, rgba(176, 0, 32, 0.16), transparent 28rem),
+        linear-gradient(180deg, #070913 0%, #050712 58%, #03040a 100%);
+      overflow-x: hidden;
     }
 
-    header {
-      padding: 28px 32px 18px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, #171b23, #111318);
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.55), transparent 80%);
     }
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
-      line-height: 1.1;
+    a { color: inherit; }
+
+    .shell {
+      width: min(1560px, calc(100vw - 48px));
+      margin: 0 auto;
+      padding: 34px 0 40px;
+      position: relative;
+      z-index: 1;
     }
 
-    p {
-      margin: 0;
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.028)),
+        var(--panel-bg);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 22px;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), rgba(176, 0, 32, 0.9));
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      padding: 6px 11px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.06);
       color: var(--muted);
-      max-width: 920px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.085em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge.accent {
+      background: var(--accent-soft);
+      border-color: var(--accent-line);
+      color: #e4e1ff;
+    }
+
+    .hero h1 {
+      margin: 0;
+      max-width: 940px;
+      color: var(--text-strong);
+      font-size: clamp(2.15rem, 4.5vw, 5.4rem);
+      line-height: 0.92;
+      letter-spacing: -0.055em;
+      text-transform: uppercase;
+      font-weight: 950;
+    }
+
+    .hero p {
+      margin: 16px 0 0;
+      max-width: 790px;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 410px 1fr;
-      min-height: calc(100vh - 111px);
+      grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .controls-panel,
+    .preview-panel,
+    .url-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--panel-bg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(18px);
+    }
+
+    .controls-panel {
+      position: sticky;
+      top: 18px;
+      max-height: calc(100vh - 36px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line-soft);
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025));
+    }
+
+    .panel-title {
+      margin: 0;
+      color: var(--text-strong);
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    .panel-desc {
+      margin: 6px 0 0;
+      color: var(--muted-soft);
+      font-size: 0.9rem;
     }
 
     .controls {
-      padding: 24px;
-      border-right: 1px solid var(--border);
-      background: var(--panel);
-      overflow: auto;
-      max-height: calc(100vh - 111px);
-    }
-
-    .preview-pane {
-      padding: 24px;
+      padding: 16px;
       overflow: auto;
     }
 
     fieldset {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin: 0 0 18px;
-      background: var(--panel-2);
+      margin: 0 0 14px;
+      padding: 0;
+      border: 0;
     }
 
-    legend {
-      padding: 0 8px;
+    .section-card {
+      position: relative;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-md);
+      background: var(--card-bg);
+      padding: 14px;
+    }
+
+    .section-card + .section-card { margin-top: 14px; }
+
+    .section-card::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(120, 105, 255, 0.55), transparent);
+    }
+
+    legend,
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin: 0 0 12px;
+      color: var(--text-strong);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.105em;
+      text-transform: uppercase;
+    }
+
+    .section-title span:last-child,
+    legend span:last-child {
+      color: var(--muted-soft);
+      font-size: 0.68rem;
       font-weight: 800;
-      color: #fff;
+      letter-spacing: 0.08em;
     }
 
     label {
       display: grid;
       gap: 7px;
-      margin-bottom: 13px;
+      margin: 0 0 12px;
       color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 0.69rem;
+      font-weight: 850;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.085em;
     }
+
+    label:last-child { margin-bottom: 0; }
 
     input,
     select,
     textarea {
       width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 11px;
-      background: #0f1218;
+      min-height: 42px;
+      border: 1px solid var(--line-soft);
+      border-radius: 13px;
+      padding: 10px 12px;
+      background: var(--field-bg);
       color: var(--text);
       font: inherit;
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    input:hover,
+    select:hover,
+    textarea:hover {
+      background: var(--field-bg-focus);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    button:focus-visible {
+      box-shadow: var(--focus);
+      border-color: var(--accent-line);
     }
 
     input[type="color"] {
-      min-height: 42px;
-      padding: 4px;
+      height: 42px;
+      padding: 5px;
+      cursor: pointer;
+    }
+
+    input[type="password"] {
+      letter-spacing: 0.03em;
     }
 
     .two-col {
@@ -111,38 +318,113 @@
       gap: 12px;
     }
 
-    .actions {
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .btn-row {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
     button {
-      border: 0;
-      border-radius: 10px;
-      padding: 11px 14px;
-      background: var(--accent);
-      color: white;
-      font-weight: 800;
+      min-height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font: inherit;
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.085em;
+      text-transform: uppercase;
       cursor: pointer;
+      transition: transform 160ms ease, filter 160ms ease, background 160ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
     }
 
     button.secondary {
-      background: #343b49;
+      background: rgba(255, 255, 255, 0.075);
+      color: var(--text);
+    }
+
+    button.full { width: 100%; }
+
+    .workspace {
+      display: grid;
+      gap: 22px;
+    }
+
+    .preview-panel { padding: 18px; }
+
+    .preview-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .preview-header h2 {
+      margin: 0;
+      color: var(--text-strong);
+      font-size: 1rem;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .preview-header p {
+      margin: 5px 0 0;
+      color: var(--muted-soft);
+      font-size: 0.9rem;
+    }
+
+    .status-stack {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .iframe-wrap {
-      width: min(100%, 1280px);
+      position: relative;
+      width: 100%;
       aspect-ratio: 16 / 9;
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
       overflow: hidden;
       background:
-        linear-gradient(45deg, rgba(255,255,255,.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.05) 75%),
-        linear-gradient(45deg, rgba(255,255,255,.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.05) 75%),
-        #222834;
+        linear-gradient(45deg, rgba(255,255,255,.045) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.045) 75%),
+        linear-gradient(45deg, rgba(255,255,255,.045) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.045) 75%),
+        rgba(255,255,255,0.035);
       background-position: 0 0, 20px 20px;
       background-size: 40px 40px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.045);
+    }
+
+    .iframe-wrap::before {
+      content: "1920 × 1080 PREVIEW";
+      position: absolute;
+      z-index: 2;
+      top: 14px;
+      right: 14px;
+      padding: 7px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--line-soft);
+      background: rgba(0,0,0,0.42);
+      color: var(--muted);
+      font-size: 0.66rem;
+      font-weight: 900;
+      letter-spacing: 0.09em;
     }
 
     iframe {
@@ -152,187 +434,401 @@
       display: block;
     }
 
-    .url-box {
-      margin-top: 22px;
-      width: min(100%, 1280px);
+    .url-panel {
+      padding: 18px;
+    }
+
+    .url-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: end;
     }
 
     textarea {
-      min-height: 112px;
+      min-height: 118px;
       resize: vertical;
-      font-family: Consolas, Monaco, monospace;
-      font-size: 14px;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      text-transform: none;
+      letter-spacing: 0;
     }
 
-    .note {
-      margin-top: 10px;
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .note-card {
+      border: 1px solid var(--line-soft);
+      border-radius: 18px;
+      background: var(--card-bg);
+      padding: 13px;
+    }
+
+    .note-card strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text-strong);
+      font-size: 0.7rem;
+      font-weight: 950;
+      letter-spacing: 0.095em;
+      text-transform: uppercase;
+    }
+
+    .note-card span {
       color: var(--muted);
-      font-size: 14px;
+      font-size: 0.86rem;
     }
 
-    @media (max-width: 980px) {
+    .mini-preview {
+      display: grid;
+      gap: 8px;
+      min-width: 260px;
+      border: 1px solid var(--line-soft);
+      border-radius: 18px;
+      background: var(--card-bg);
+      padding: 14px;
+    }
+
+    .mini-preview-title {
+      color: var(--muted-soft);
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.105em;
+      text-transform: uppercase;
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      border-radius: 14px;
+      border: 1px solid var(--line-soft);
+      background: rgba(255,255,255,0.045);
+      padding: 10px;
+    }
+
+    .metric b {
+      display: block;
+      color: var(--text-strong);
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted-soft);
+      font-size: 0.62rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 180ms ease, transform 180ms ease;
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius-pill);
+      background: rgba(10, 12, 20, 0.9);
+      color: #fff;
+      padding: 11px 14px;
+      font-size: 0.74rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1180px) {
       .layout { grid-template-columns: 1fr; }
-      .controls { max-height: none; border-right: 0; border-bottom: 1px solid var(--border); }
+      .controls-panel {
+        position: static;
+        max-height: none;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      .section-card + .section-card { margin-top: 0; }
+    }
+
+    @media (max-width: 780px) {
+      .shell {
+        width: min(100% - 28px, 1560px);
+        padding: 18px 0 28px;
+      }
+      .hero,
+      .preview-panel,
+      .url-panel { padding: 16px; }
+      .hero-grid,
+      .url-grid { grid-template-columns: 1fr; }
+      .hero-actions { justify-content: flex-start; }
+      .controls { grid-template-columns: 1fr; }
+      .two-col,
+      .three-col,
+      .note-grid { grid-template-columns: 1fr; }
+      .preview-header { flex-direction: column; }
+      .status-stack { justify-content: flex-start; }
+      .mini-preview { min-width: 0; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Breaking News Overlay Customizer</h1>
-    <p>Customize the overlay, preview the result, then copy the generated OBS Browser Source URL. Use a 1920 × 1080 browser source in OBS.</p>
-  </header>
-
-  <div class="layout">
-    <form id="controls" class="controls">
-      <fieldset>
-        <legend>Connection</legend>
-        <div class="two-col">
-          <label>Host
-            <input name="host" value="127.0.0.1" />
-          </label>
-          <label>Port
-            <input name="port" value="8080" />
-          </label>
+  <div class="shell">
+    <header class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow-row" aria-label="Page metadata">
+            <span class="badge accent">Streamer.bot Tool</span>
+            <span class="badge">OBS Browser Source</span>
+            <span class="badge">GitHub Pages Ready</span>
+          </div>
+          <h1>Breaking News Overlay Customizer</h1>
+          <p>Build a stream-ready ticker, preview it in a 16:9 stage, then copy the generated OBS Browser Source URL. Use this page to customize visuals; Streamer.bot controls the live messages.</p>
         </div>
-        <div class="two-col">
-          <label>Endpoint
-            <input name="endpoint" value="/" />
-          </label>
-          <label>Secure WebSocket
-            <select name="secure">
-              <option value="false">ws://</option>
-              <option value="true">wss://</option>
-            </select>
-          </label>
+        <div class="mini-preview" aria-label="Recommended OBS settings">
+          <div class="mini-preview-title">Recommended OBS Source</div>
+          <div class="metric-row">
+            <div class="metric"><b>1920</b><span>Width</span></div>
+            <div class="metric"><b>1080</b><span>Height</span></div>
+          </div>
+          <button class="secondary full" type="button" id="copyUrlHero">Copy OBS URL</button>
         </div>
-        <label>Password, only if Streamer.bot auth is enabled
-          <input name="password" value="" type="password" autocomplete="off" />
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Text</legend>
-        <label>Left Label
-          <input name="label" value="BREAKING NEWS" />
-        </label>
-        <label>Static Subtitle
-          <input name="subtitle" value="STREAM UPDATE" />
-        </label>
-        <label>Preview Headline
-          <input name="headline" value="This is a preview of the breaking news ticker message scrolling right to left." />
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Layout</legend>
-        <div class="two-col">
-          <label>Bar Height
-            <input name="barHeight" value="96" type="number" min="48" max="180" />
-          </label>
-          <label>Bottom Offset
-            <input name="barBottom" value="36" type="number" min="0" max="240" />
-          </label>
-        </div>
-        <div class="two-col">
-          <label>Side Margin
-            <input name="barSideMargin" value="64" type="number" min="0" max="240" />
-          </label>
-          <label>Label Width
-            <input name="labelWidth" value="330" type="number" min="180" max="620" />
-          </label>
-        </div>
-        <label>Corner Radius
-          <input name="barRadius" value="0" type="number" min="0" max="48" />
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Colors</legend>
-        <div class="two-col">
-          <label>Label Background
-            <input name="labelBg" value="#b00020" type="color" />
-          </label>
-          <label>Label Text
-            <input name="labelText" value="#ffffff" type="color" />
-          </label>
-        </div>
-        <div class="two-col">
-          <label>Subtitle Background
-            <input name="subtitleBg" value="#101010" type="color" />
-          </label>
-          <label>Subtitle Text
-            <input name="subtitleText" value="#ffffff" type="color" />
-          </label>
-        </div>
-        <div class="two-col">
-          <label>Ticker Background
-            <input name="tickerBg" value="#f5f5f5" type="color" />
-          </label>
-          <label>Ticker Text
-            <input name="tickerText" value="#111111" type="color" />
-          </label>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Typography and Timing</legend>
-        <label>Font Family
-          <input name="fontFamily" value="Arial, Helvetica, sans-serif" />
-        </label>
-        <div class="two-col">
-          <label>Label Size
-            <input name="labelSize" value="42" type="number" min="16" max="90" />
-          </label>
-          <label>Subtitle Size
-            <input name="subtitleSize" value="26" type="number" min="12" max="72" />
-          </label>
-        </div>
-        <div class="two-col">
-          <label>Headline Size
-            <input name="headlineSize" value="34" type="number" min="14" max="88" />
-          </label>
-          <label>Scroll Speed px/sec
-            <input name="scrollSpeed" value="210" type="number" min="60" max="800" />
-          </label>
-        </div>
-        <label>Default Duration Seconds
-          <input name="defaultDurationSeconds" value="12" type="number" min="0" max="999" />
-        </label>
-      </fieldset>
-
-      <div class="actions">
-        <button type="button" id="copyUrl">Copy OBS URL</button>
-        <button type="button" id="reset" class="secondary">Reset</button>
       </div>
-    </form>
+    </header>
 
-    <section class="preview-pane">
-      <div class="iframe-wrap">
-        <iframe id="previewFrame" title="Overlay preview"></iframe>
-      </div>
+    <main class="layout">
+      <aside class="controls-panel" aria-label="Overlay customization controls">
+        <div class="panel-head">
+          <h2 class="panel-title">Control Stack</h2>
+          <p class="panel-desc">Adjust connection, copy, layout, colors, type, and timing.</p>
+        </div>
 
-      <div class="url-box">
-        <label>Generated OBS Browser Source URL
-          <textarea id="generatedUrl" readonly></textarea>
-        </label>
-        <p class="note">OBS Browser Source settings: width 1920, height 1080. Keep custom CSS empty unless you intentionally want to override the overlay.</p>
-      </div>
-    </section>
+        <form id="controls" class="controls">
+          <fieldset class="section-card">
+            <legend><span>Connection</span><span>WebSocket</span></legend>
+            <div class="two-col">
+              <label>Host
+                <input name="host" value="127.0.0.1" autocomplete="off" />
+              </label>
+              <label>Port
+                <input name="port" value="8080" inputmode="numeric" autocomplete="off" />
+              </label>
+            </div>
+            <div class="two-col">
+              <label>Endpoint
+                <input name="endpoint" value="/" autocomplete="off" />
+              </label>
+              <label>Secure WebSocket
+                <select name="secure">
+                  <option value="false">ws://</option>
+                  <option value="true">wss://</option>
+                </select>
+              </label>
+            </div>
+            <label>Password, only if Streamer.bot auth is enabled
+              <input name="password" value="" type="password" autocomplete="off" />
+            </label>
+          </fieldset>
+
+          <fieldset class="section-card">
+            <legend><span>Message Content</span><span>Preview Text</span></legend>
+            <label>Left Label
+              <input name="label" value="BREAKING NEWS" />
+            </label>
+            <label>Static Subtitle
+              <input name="subtitle" value="STREAM UPDATE" />
+            </label>
+            <label>Preview Headline
+              <input name="headline" value="This is a preview of the breaking news ticker message scrolling right to left." />
+            </label>
+          </fieldset>
+
+          <fieldset class="section-card">
+            <legend><span>Layout</span><span>Stage Position</span></legend>
+            <div class="two-col">
+              <label>Bar Height
+                <input name="barHeight" value="92" type="number" min="48" max="180" />
+              </label>
+              <label>Bottom Offset
+                <input name="barBottom" value="36" type="number" min="0" max="240" />
+              </label>
+            </div>
+            <div class="two-col">
+              <label>Side Margin
+                <input name="barSideMargin" value="50" type="number" min="0" max="240" />
+              </label>
+              <label>Label Width
+                <input name="labelWidth" value="390" type="number" min="180" max="700" />
+              </label>
+            </div>
+            <label>Corner Radius
+              <input name="barRadius" value="0" type="number" min="0" max="48" />
+            </label>
+          </fieldset>
+
+          <fieldset class="section-card">
+            <legend><span>Color System</span><span>All Sections</span></legend>
+            <div class="two-col">
+              <label>Label Background
+                <input name="labelBg" value="#b00020" type="color" />
+              </label>
+              <label>Label Text
+                <input name="labelText" value="#ffffff" type="color" />
+              </label>
+            </div>
+            <div class="two-col">
+              <label>Subtitle Background
+                <input name="subtitleBg" value="#101010" type="color" />
+              </label>
+              <label>Subtitle Text
+                <input name="subtitleText" value="#ffffff" type="color" />
+              </label>
+            </div>
+            <div class="two-col">
+              <label>Ticker Background
+                <input name="tickerBg" value="#f5f5f5" type="color" />
+              </label>
+              <label>Ticker Text
+                <input name="tickerText" value="#111111" type="color" />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="section-card">
+            <legend><span>Typography</span><span>Readability</span></legend>
+            <label>Font Family
+              <input name="fontFamily" value="Arial, Helvetica, sans-serif" />
+            </label>
+            <div class="three-col">
+              <label>Label Size
+                <input name="labelSize" value="34" type="number" min="16" max="90" />
+              </label>
+              <label>Subtitle Size
+                <input name="subtitleSize" value="24" type="number" min="12" max="72" />
+              </label>
+              <label>Headline Size
+                <input name="headlineSize" value="30" type="number" min="14" max="88" />
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset class="section-card">
+            <legend><span>Timing</span><span>Motion</span></legend>
+            <div class="two-col">
+              <label>Scroll Speed px/sec
+                <input name="scrollSpeed" value="180" type="number" min="60" max="800" />
+              </label>
+              <label>Default Duration Seconds
+                <input name="defaultDurationSeconds" value="12" type="number" min="0" max="999" />
+              </label>
+            </div>
+            <div class="btn-row">
+              <button type="button" id="copyUrl">Copy OBS URL</button>
+              <button type="button" id="reset" class="secondary">Reset</button>
+            </div>
+          </fieldset>
+        </form>
+      </aside>
+
+      <section class="workspace" aria-label="Preview and generated URL">
+        <section class="preview-panel" aria-labelledby="previewTitle">
+          <div class="preview-header">
+            <div>
+              <h2 id="previewTitle">Live Overlay Preview</h2>
+              <p>Preview mode uses your styling choices but does not connect to Streamer.bot.</p>
+            </div>
+            <div class="status-stack" aria-label="Preview status">
+              <span class="badge accent">Preview Mode</span>
+              <span class="badge">Transparent Source</span>
+            </div>
+          </div>
+
+          <div class="iframe-wrap">
+            <iframe id="previewFrame" title="Breaking news overlay preview"></iframe>
+          </div>
+        </section>
+
+        <section class="url-panel" aria-labelledby="urlTitle">
+          <div class="preview-header">
+            <div>
+              <h2 id="urlTitle">Generated Browser Source URL</h2>
+              <p>Paste this into OBS after your Streamer.bot WebSocket server is enabled.</p>
+            </div>
+            <div class="btn-row">
+              <button type="button" id="copyUrlPanel">Copy URL</button>
+              <button type="button" id="openOverlay" class="secondary">Open Overlay</button>
+            </div>
+          </div>
+
+          <div class="url-grid">
+            <label>OBS Browser Source URL
+              <textarea id="generatedUrl" readonly></textarea>
+            </label>
+          </div>
+
+          <div class="note-grid" aria-label="Setup notes">
+            <div class="note-card">
+              <strong>OBS Size</strong>
+              <span>Set Browser Source width to 1920 and height to 1080.</span>
+            </div>
+            <div class="note-card">
+              <strong>Streamer.bot</strong>
+              <span>Use 127.0.0.1, port 8080, endpoint / for local testing.</span>
+            </div>
+            <div class="note-card">
+              <strong>Custom CSS</strong>
+              <span>Leave OBS custom CSS empty unless intentionally overriding the overlay.</span>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
   </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Copied OBS URL</div>
 
   <script>
     const form = document.getElementById('controls');
     const frame = document.getElementById('previewFrame');
     const output = document.getElementById('generatedUrl');
-    const copyButton = document.getElementById('copyUrl');
+    const copyButtons = [
+      document.getElementById('copyUrl'),
+      document.getElementById('copyUrlHero'),
+      document.getElementById('copyUrlPanel')
+    ];
     const resetButton = document.getElementById('reset');
+    const openOverlayButton = document.getElementById('openOverlay');
+    const toast = document.getElementById('toast');
 
     const defaults = new FormData(form);
+    let toastTimer = null;
 
     form.addEventListener('input', update);
     form.addEventListener('change', update);
-    copyButton.addEventListener('click', copyUrl);
     resetButton.addEventListener('click', resetForm);
+    openOverlayButton.addEventListener('click', openOverlay);
+    copyButtons.forEach((button) => button.addEventListener('click', copyUrl));
 
     update();
 
@@ -370,10 +866,18 @@
     }
 
     async function copyUrl() {
-      await navigator.clipboard.writeText(output.value);
-      const original = copyButton.textContent;
-      copyButton.textContent = 'Copied';
-      setTimeout(() => copyButton.textContent = original, 1200);
+      try {
+        await navigator.clipboard.writeText(output.value);
+        showToast('Copied OBS URL');
+      } catch {
+        output.focus();
+        output.select();
+        showToast('Select and copy the URL');
+      }
+    }
+
+    function openOverlay() {
+      window.open(output.value, '_blank', 'noopener,noreferrer');
     }
 
     function resetForm() {
@@ -382,6 +886,14 @@
         if (field) field.value = value;
       }
       update();
+      showToast('Settings reset');
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 1600);
     }
   </script>
 </body>
