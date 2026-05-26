@@ -15,10 +15,10 @@
     subtitle: 'STREAM UPDATE',
     headline: 'This is a sample breaking news message.',
 
-    barHeight: '96',
+    barHeight: '92',
     barBottom: '36',
-    barSideMargin: '64',
-    labelWidth: '330',
+    barSideMargin: '50',
+    labelWidth: '390',
     barRadius: '0',
 
     labelBg: '#b00020',
@@ -29,11 +29,11 @@
     tickerText: '#111111',
 
     fontFamily: 'Arial, Helvetica, sans-serif',
-    labelSize: '42',
-    subtitleSize: '26',
-    headlineSize: '34',
+    labelSize: '34',
+    subtitleSize: '24',
+    headlineSize: '30',
 
-    scrollSpeed: '210',
+    scrollSpeed: '180',
     defaultDurationSeconds: '12'
   };
 
@@ -43,7 +43,6 @@
     subtitleRow: document.getElementById('subtitleRow'),
     tickerWindow: document.getElementById('tickerWindow'),
     tickerTrack: document.getElementById('tickerTrack'),
-    headlineText: document.getElementById('headlineText'),
     debugPanel: document.getElementById('debugPanel'),
     debugStatus: document.getElementById('debugStatus'),
     debugSocket: document.getElementById('debugSocket'),
@@ -58,7 +57,15 @@
     current: null,
     hideTimer: null,
     isShowing: false,
-    authenticated: false
+    authenticated: false,
+
+    tickerFrame: null,
+    tickerLastTime: 0,
+    tickerX: 0,
+    tickerLoopWidth: 0,
+    tickerStartX: 0,
+    tickerSpeed: 180,
+    tickerGap: 96
   };
 
   init();
@@ -120,6 +127,8 @@
 
     if (settings.label) els.labelText.textContent = settings.label;
     if (settings.subtitle) els.subtitleRow.textContent = settings.subtitle;
+
+    state.tickerSpeed = Math.max(60, safeInt(state.settings.scrollSpeed, 180));
   }
 
   function connect() {
@@ -167,7 +176,7 @@
   }
 
   async function handleSocketMessage(raw) {
-    let payload = parseJson(raw);
+    const payload = parseJson(raw);
     if (!payload) return;
 
     if (payload.request === 'Hello') {
@@ -193,7 +202,7 @@
     const command = extractBreakingNewsPayload(payload);
     if (!command) {
       if (toBool(state.settings.debug)) {
-        setDebug('Message ignored', truncate(raw, 90));
+        setDebug('Message ignored', truncate(raw, 120));
       }
       return;
     }
@@ -298,6 +307,7 @@
     if (state.queue.length === 0) {
       state.current = null;
       state.isShowing = false;
+      stopTickerAnimation();
       return;
     }
 
@@ -317,9 +327,9 @@
 
     els.labelText.textContent = normalized.label || state.settings.label;
     els.subtitleRow.textContent = normalized.subtitle || state.settings.subtitle;
-    els.headlineText.textContent = normalized.headline || state.settings.headline;
 
     els.newsBar.classList.remove('is-hidden');
+    setTickerHeadline(normalized.headline || state.settings.headline);
     restartTickerAnimation();
 
     clearTimeout(state.hideTimer);
@@ -347,7 +357,7 @@
     if (normalized.label) els.labelText.textContent = normalized.label;
     if (normalized.subtitle) els.subtitleRow.textContent = normalized.subtitle;
     if (normalized.headline) {
-      els.headlineText.textContent = normalized.headline;
+      setTickerHeadline(normalized.headline);
       restartTickerAnimation();
     }
 
@@ -363,6 +373,7 @@
     els.newsBar.classList.add('is-hidden');
     state.isShowing = false;
     state.current = null;
+    stopTickerAnimation();
 
     if (continueQueue) {
       setTimeout(playNext, 320);
@@ -384,29 +395,78 @@
     };
   }
 
+  function setTickerHeadline(text) {
+    const headline = String(text || '').trim() || state.settings.headline;
+    const gap = state.tickerGap;
+
+    els.tickerTrack.innerHTML = '';
+
+    for (let i = 0; i < 3; i += 1) {
+      const span = document.createElement('span');
+      span.className = 'ticker-item';
+      span.textContent = headline;
+      els.tickerTrack.appendChild(span);
+    }
+
+    // Force layout so widths can be measured reliably in OBS/browser source.
+    void els.tickerTrack.offsetWidth;
+
+    const firstItem = els.tickerTrack.querySelector('.ticker-item');
+    const itemWidth = firstItem ? firstItem.getBoundingClientRect().width : 0;
+    state.tickerLoopWidth = itemWidth + gap;
+    state.tickerStartX = els.tickerWindow.getBoundingClientRect().width;
+    state.tickerX = state.tickerStartX;
+
+    applyTickerTransform();
+  }
+
   function restartTickerAnimation() {
-    const speed = Math.max(60, safeInt(state.settings.scrollSpeed, 210));
+    stopTickerAnimation();
 
-    els.tickerTrack.classList.remove('is-animating');
-    els.tickerTrack.style.animation = 'none';
-
+    // Wait one frame so measurements are correct after content/style updates.
     requestAnimationFrame(() => {
-      const windowWidth = els.tickerWindow.getBoundingClientRect().width;
-      const textWidth = els.headlineText.getBoundingClientRect().width;
-      const distance = windowWidth + textWidth + 64;
-      const duration = Math.max(5, distance / speed);
+      const firstItem = els.tickerTrack.querySelector('.ticker-item');
+      if (!firstItem) return;
 
-      document.documentElement.style.setProperty('--ticker-start', `${windowWidth}px`);
-      document.documentElement.style.setProperty('--ticker-end', `-${textWidth + 64}px`);
-      document.documentElement.style.setProperty('--ticker-duration', `${duration}s`);
+      const gapValue = getComputedStyle(els.tickerTrack).columnGap || getComputedStyle(els.tickerTrack).gap || '96px';
+      state.tickerGap = safeInt(gapValue, 96);
+      state.tickerLoopWidth = firstItem.getBoundingClientRect().width + state.tickerGap;
+      state.tickerStartX = els.tickerWindow.getBoundingClientRect().width;
+      state.tickerX = state.tickerStartX;
+      state.tickerLastTime = 0;
 
-      els.tickerTrack.style.animation = '';
-      els.tickerTrack.classList.add('is-animating');
+      const tick = (timestamp) => {
+        if (!state.isShowing) return;
+
+        if (!state.tickerLastTime) state.tickerLastTime = timestamp;
+        const deltaSeconds = (timestamp - state.tickerLastTime) / 1000;
+        state.tickerLastTime = timestamp;
+
+        state.tickerX -= state.tickerSpeed * deltaSeconds;
+
+        if (state.tickerLoopWidth > 0 && state.tickerX <= -state.tickerLoopWidth) {
+          state.tickerX += state.tickerLoopWidth;
+        }
+
+        applyTickerTransform();
+        state.tickerFrame = requestAnimationFrame(tick);
+      };
+
+      applyTickerTransform();
+      state.tickerFrame = requestAnimationFrame(tick);
     });
   }
 
-  function unwrapPayload(payload) {
-    return extractBreakingNewsPayload(payload) || payload;
+  function stopTickerAnimation() {
+    if (state.tickerFrame) {
+      cancelAnimationFrame(state.tickerFrame);
+      state.tickerFrame = null;
+    }
+    state.tickerLastTime = 0;
+  }
+
+  function applyTickerTransform() {
+    els.tickerTrack.style.transform = `translate3d(${Math.round(state.tickerX)}px, -50%, 0)`;
   }
 
   function extractBreakingNewsPayload(value, depth = 0) {
