@@ -141,7 +141,8 @@
 
     state.socket.addEventListener('open', () => {
       state.authenticated = false;
-      setDebug('Connected', url);
+      setDebug('Connected - subscribing', url);
+      subscribeToStreamerBotEvents();
     });
 
     state.socket.addEventListener('message', async (event) => {
@@ -171,21 +172,34 @@
 
     if (payload.request === 'Hello') {
       await maybeAuthenticate(payload);
+      if (!payload.authentication) subscribeToStreamerBotEvents();
       return;
     }
 
     if (payload.status && payload.id) {
       if (payload.id === 'breaking-news-auth') {
         state.authenticated = payload.status === 'ok';
-        setDebug(state.authenticated ? 'Authenticated' : 'Authentication failed', payload.status);
+        setDebug(state.authenticated ? 'Authenticated - subscribing' : 'Authentication failed', payload.status);
+        if (state.authenticated) subscribeToStreamerBotEvents();
+      }
+
+      if (payload.id === 'breaking-news-subscribe') {
+        setDebug(payload.status === 'ok' ? 'Subscribed' : 'Subscribe failed', JSON.stringify(payload.events || payload.status));
+      }
+
+      return;
+    }
+
+    const command = extractBreakingNewsPayload(payload);
+    if (!command) {
+      if (toBool(state.settings.debug)) {
+        setDebug('Message ignored', truncate(raw, 90));
       }
       return;
     }
 
-    payload = unwrapPayload(payload);
-    if (!isBreakingNewsPayload(payload)) return;
-
-    handleCommand(payload);
+    setDebug('Command received', command.action || command.command || 'queue');
+    handleCommand(command);
   }
 
   async function maybeAuthenticate(helloPayload) {
@@ -204,6 +218,17 @@
       request: 'Authenticate',
       id: 'breaking-news-auth',
       authentication
+    });
+  }
+
+  function subscribeToStreamerBotEvents() {
+    sendSocket({
+      request: 'Subscribe',
+      id: 'breaking-news-subscribe',
+      events: {
+        General: ['Custom'],
+        Custom: ['Event', 'CodeEvent']
+      }
     });
   }
 
@@ -381,20 +406,33 @@
   }
 
   function unwrapPayload(payload) {
-    if (typeof payload.data === 'string') {
-      const inner = parseJson(payload.data);
-      if (inner) return inner;
+    return extractBreakingNewsPayload(payload) || payload;
+  }
+
+  function extractBreakingNewsPayload(value, depth = 0) {
+    if (depth > 8 || value === null || value === undefined) return null;
+
+    const parsed = parseJson(value);
+    if (parsed !== value) return extractBreakingNewsPayload(parsed, depth + 1);
+
+    if (!parsed || typeof parsed !== 'object') return null;
+    if (isBreakingNewsPayload(parsed)) return parsed;
+
+    const possibleContainers = [
+      parsed.data,
+      parsed.args,
+      parsed.arguments,
+      parsed.payload,
+      parsed.message,
+      parsed.eventData
+    ];
+
+    for (const container of possibleContainers) {
+      const found = extractBreakingNewsPayload(container, depth + 1);
+      if (found) return found;
     }
 
-    if (payload.data && typeof payload.data === 'object' && isBreakingNewsPayload(payload.data)) {
-      return payload.data;
-    }
-
-    if (payload.args && typeof payload.args === 'object' && isBreakingNewsPayload(payload.args)) {
-      return payload.args;
-    }
-
-    return payload;
+    return null;
   }
 
   function isBreakingNewsPayload(payload) {
@@ -431,6 +469,11 @@
   function safeInt(value, fallback) {
     const parsed = parseInt(value, 10);
     return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function truncate(value, maxLength) {
+    const text = String(value || '');
+    return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
   }
 
   function setDebugVisible(visible) {
