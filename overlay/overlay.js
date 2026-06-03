@@ -43,6 +43,8 @@
     subtitleRow: document.getElementById('subtitleRow'),
     tickerWindow: document.getElementById('tickerWindow'),
     tickerTrack: document.getElementById('tickerTrack'),
+    connectionStatus: document.getElementById('connectionStatus'),
+    connectionStatusText: document.getElementById('connectionStatusText'),
     debugPanel: document.getElementById('debugPanel'),
     debugStatus: document.getElementById('debugStatus'),
     debugSocket: document.getElementById('debugSocket'),
@@ -58,6 +60,7 @@
     hideTimer: null,
     isShowing: false,
     authenticated: false,
+    connectedStatusTimer: null,
 
     tickerFrame: null,
     tickerLastTime: 0,
@@ -75,6 +78,7 @@
     setDebugVisible(toBool(state.settings.debug));
 
     if (toBool(state.settings.preview)) {
+      hideConnectionStatus();
       setDebug('Preview mode', 'WebSocket disabled');
       showNow({
         headline: state.settings.headline,
@@ -139,11 +143,13 @@
     const url = `${scheme}://${state.settings.host}:${state.settings.port}${endpoint}`;
 
     setDebug('Connecting', url);
+    showConnectionStatus('connecting', 'Connecting...');
 
     try {
       state.socket = new WebSocket(url);
     } catch (error) {
       setDebug('Connection error', error.message);
+      showConnectionStatus('connecting', 'Connecting...');
       scheduleReconnect();
       return;
     }
@@ -151,6 +157,7 @@
     state.socket.addEventListener('open', () => {
       state.authenticated = false;
       setDebug('Connected - subscribing', url);
+      showConnectionStatus('connected', 'Connected!', 2000);
       subscribeToStreamerBotEvents();
     });
 
@@ -160,11 +167,13 @@
 
     state.socket.addEventListener('close', () => {
       setDebug('Disconnected', 'Socket closed');
+      showConnectionStatus('connecting', 'Connecting...');
       scheduleReconnect();
     });
 
     state.socket.addEventListener('error', () => {
       setDebug('Socket error', 'Check Streamer.bot WebSocket settings');
+      showConnectionStatus('connecting', 'Connecting...');
     });
   }
 
@@ -189,7 +198,12 @@
       if (payload.id === 'breaking-news-auth') {
         state.authenticated = payload.status === 'ok';
         setDebug(state.authenticated ? 'Authenticated - subscribing' : 'Authentication failed', payload.status);
-        if (state.authenticated) subscribeToStreamerBotEvents();
+        if (state.authenticated) {
+          showConnectionStatus('connected', 'Connected!', 2000);
+          subscribeToStreamerBotEvents();
+        } else {
+          showConnectionStatus('connecting', 'Authentication Required');
+        }
       }
 
       if (payload.id === 'breaking-news-subscribe') {
@@ -207,6 +221,7 @@
       return;
     }
 
+    hideConnectionStatus();
     setDebug('Command received', command.action || command.command || 'queue');
     handleCommand(command);
   }
@@ -534,6 +549,26 @@
   function truncate(value, maxLength) {
     const text = String(value || '');
     return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
+  }
+
+
+  function showConnectionStatus(mode, text, hideAfterMs = 0) {
+    if (!els.connectionStatus || !els.connectionStatusText) return;
+
+    clearTimeout(state.connectedStatusTimer);
+    els.connectionStatus.classList.remove('is-hidden', 'is-connecting', 'is-connected');
+    els.connectionStatus.classList.add(mode === 'connected' ? 'is-connected' : 'is-connecting');
+    els.connectionStatusText.textContent = text;
+
+    if (hideAfterMs > 0) {
+      state.connectedStatusTimer = setTimeout(hideConnectionStatus, hideAfterMs);
+    }
+  }
+
+  function hideConnectionStatus() {
+    clearTimeout(state.connectedStatusTimer);
+    if (!els.connectionStatus) return;
+    els.connectionStatus.classList.add('is-hidden');
   }
 
   function setDebugVisible(visible) {
