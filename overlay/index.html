@@ -23,6 +23,13 @@
       </div>
     </section>
 
+    <section id="connectionStatus" class="connection-status is-hidden" aria-live="polite" aria-atomic="true">
+      <div class="connection-status-inner">
+        <span class="connection-status-dot" aria-hidden="true"></span>
+        <span id="connectionStatusText">Connecting...</span>
+      </div>
+    </section>
+
     <aside id="debugPanel" class="debug-panel" hidden>
       <div><strong>Status:</strong> <span id="debugStatus">Loading</span></div>
       <div><strong>Socket:</strong> <span id="debugSocket">Not connected</span></div>
